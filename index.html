@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Study Bloom — учебный помощник</title>
+<style>
+:root{--bg:#f7f1ed;--card:#fffdfb;--text:#403b3b;--muted:#8f8581;--accent:#cfa7a8;--accent2:#e9d8d5;--line:#eee4df}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}
+.app{max-width:480px;margin:auto;min-height:100vh;padding-bottom:90px}header{padding:28px 22px 12px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:800;font-size:22px}.avatar{width:42px;height:42px;border-radius:50%;background:var(--accent2);display:grid;place-items:center}
+main{padding:8px 18px}h1{font-size:29px;line-height:1.08;margin:12px 0 8px}p{color:var(--muted);line-height:1.5}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;margin:14px 0;box-shadow:0 8px 25px #6d5c5210}
+.greeting{background:linear-gradient(135deg,#f2dfdc,#fbf7f3)}.badge{display:inline-block;background:#fff8;border-radius:20px;padding:7px 11px;font-size:12px;color:#776968}
+button{border:0;border-radius:16px;padding:13px 17px;background:var(--text);color:white;font-size:14px;cursor:pointer}button.soft{background:var(--accent2);color:var(--text)}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.progress{height:9px;background:#eee5e0;border-radius:20px;overflow:hidden;margin:14px 0}.progress span{display:block;height:100%;width:42%;background:var(--accent);border-radius:20px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#fffaf7;border:1px solid var(--line);border-radius:17px;padding:14px 8px;text-align:center}.stat b{font-size:20px}.stat small{display:block;color:var(--muted);margin-top:4px}
+.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);background:#fffdfbf2;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:10px 8px 12px;z-index:5}
+.tab{background:none;color:var(--muted);padding:7px 3px;font-size:11px}.tab.active{color:var(--text);font-weight:700}.icon{font-size:19px;display:block;margin-bottom:3px}.hidden{display:none}
+.day{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.check{width:28px;height:28px;border-radius:10px;background:var(--accent2);display:grid;place-items:center;cursor:pointer}.check.done{background:#b8c9bd;color:white}.day:last-child{border:0}
+.chat{background:#f4ebe8;border-radius:20px 20px 20px 5px;padding:14px;margin:12px 40px 12px 0}
+</style>
+</head>
+<body><div class="app">
+<header><div class="logo">Study Bloom ✦</div><div class="avatar">✦</div></header>
+<main>
+<section id="home">
+<div class="card greeting"><span class="badge">Твой учебный куратор</span><h1>Привет! 🌷</h1><p>Давай спокойно и уверенно двигаться к твоей учебной цели. Я помогу распределить время и следить за прогрессом.</p><button onclick="show('mentor')">Открыть наставника →</button></div>
+<div class="card"><div class="row"><div><b>Твоя цель</b><p style="margin:5px 0 0">Английский до B1</p></div><span>62 дня</span></div><div class="progress"><span></span></div><div class="stats"><div class="stat"><b>42%</b><small>прогресс</small></div><div class="stat"><b>18</b><small>дней подряд</small></div><div class="stat"><b>74%</b><small>выполнено</small></div></div></div>
+<div class="card"><div class="row"><div><b>Сегодня</b><p style="margin:5px 0">3 задания · около 55 мин</p></div><button class="soft" onclick="show('calendar')">План</button></div>
+<div class="day"><div class="check done">✓</div><div><b>Listening</b><small> 20 мин · выполнено</small></div></div>
+<div class="day"><div class="check" onclick="toggle(this)"></div><div><b>Грамматика</b><small> 20 мин</small></div></div>
+<div class="day"><div class="check" onclick="toggle(this)"></div><div><b>Новые слова</b><small> 15 мин</small></div></div></div>
+</section>
+<section id="calendar" class="hidden"><h1>Твой путь 🌿</h1><p>День 38 из 100 · осталось 62 дня</p><div class="card"><div class="row"><b>Сентябрь</b><span class="badge">42% готово</span></div><div class="day"><div class="check done">✓</div><div><b>Сегодня</b><small> 3 из 3 выполнено</small></div></div><div class="day"><div class="check">•</div><div><b>Завтра</b><small> 3 задания запланировано</small></div></div><div class="day"><div class="check">•</div><div><b>30 сентября</b><small> повторение</small></div></div></div></section>
+<section id="mentor" class="hidden"><h1>Наставник 🤍</h1><div class="chat">Привет! Я рядом. Расскажи, какой учебной цели ты хочешь достичь и к какой дате.</div><div class="chat">Сколько времени в день ты реально можешь уделять занятиям? И где обычно учишься — дома, в дороге или в другом месте?</div><div class="card"><input id="msg" placeholder="Напиши свою цель..." style="width:100%;padding:15px;border:1px solid var(--line);border-radius:15px"><button style="margin-top:10px;width:100%" onclick="send()">Ответить наставнику</button></div></section>
+<section id="materials" class="hidden"><h1>Материалы 📚</h1><p>Всё необходимое для твоего плана — в одном месте.</p><div class="card"><b>🎬 Видеотека</b><p>Видео, лекции и подкасты по твоей цели.</p></div><div class="card"><b>📄 Файлы</b><p>Книги, PDF и печатные материалы.</p></div><div class="card"><b>🎧 Аудио</b><p>Материалы для занятий в дороге и без экрана.</p></div></section>
+<section id="profile" class="hidden"><h1>Профиль 🌸</h1><div class="card"><div class="row"><b>Мой профиль</b><div class="avatar">✦</div></div><p>Настрой имя, тему и другие параметры.</p></div><div class="card"><b>Тема приложения</b><p>Rosy + Soft White</p><button class="soft" onclick="alert('В полной версии здесь будет выбор пастельных палитр.')">Изменить тему</button></div><div class="card"><b>Напоминания</b><p>Каждый день · за 15 минут до занятия</p><button class="soft" onclick="alert('В полной версии здесь будут системные уведомления.')">Настроить</button></div></section>
+</main>
+<nav class="tabs"><button class="tab active" onclick="show('home',this)"><span class="icon">⌂</span>Главная</button><button class="tab" onclick="show('calendar',this)"><span class="icon">◫</span>План</button><button class="tab" onclick="show('mentor',this)"><span class="icon">♡</span>Наставник</button><button class="tab" onclick="show('profile',this)"><span class="icon">○</span>Профиль</button></nav>
+</div>
+<script>
+function show(id,el){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active')}
+function toggle(x){x.classList.toggle('done');x.textContent=x.classList.contains('done')?'✓':''}
+function send(){const v=document.getElementById('msg').value.trim();if(!v)return;const box=document.createElement('div');box.className='chat';box.textContent='Отлично! Я записал твою цель: «'+v+'». В полной версии я задам уточняющие вопросы и построю персональный план.';document.getElementById('mentor').insertBefore(box,document.querySelector('#mentor .card'));document.getElementById('msg').value=''}
+</script>
+</body></html>
