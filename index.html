@@ -27,3 +27,4 @@ function requestNotificationPermission(){if(!('Notification' in window)){alert('
 function show(id,el){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));$(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active')}
 function reset(){localStorage.removeItem('studyBloom');location.reload()}function pl(n){n=Math.abs(n)%100;let x=n%10;return n>10&&n<20?'дней':x===1?'день':x>1&&x<5?'дня':'дней'}function esc(s){return s.replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[x]))}if(localStorage.studyBloom)start()
 </script></body></html>
+<!-- pages-refresh-1790622407516 -->
