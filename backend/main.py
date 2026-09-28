@@ -1,9 +1,19 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, EmailStr
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from passlib.context import CryptContext
 import sqlite3
 
 app = FastAPI(title="Study Bloom API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://yaroslava0510.github.io"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 DB = "study_bloom.db"
 
