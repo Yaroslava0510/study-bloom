@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     smtp_user: str | None = None
     smtp_password: str | None = None
     smtp_from: str | None = None
+    # Required in production; used as an HMAC key for six-digit password-reset codes.
+    reset_code_pepper: str | None = None
 
 
 settings = Settings()
