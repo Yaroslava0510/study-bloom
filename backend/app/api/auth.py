@@ -92,7 +92,7 @@ async def current_user(
         select(UserSession).where(UserSession.token_hash == digest(token))
     )
     session = result.scalar_one_or_none()
-    if not session or session.expires_at <= utc_now():
+    if not session or is_expired(session.expires_at):
         raise HTTPException(status_code=401, detail="Session expired")
     user_result = await db.execute(select(User).where(User.id == session.user_id))
     user = user_result.scalar_one_or_none()
@@ -275,7 +275,7 @@ async def password_reset_complete(data: ResetCompleteRequest, db: AsyncSession =
     reset = result.scalar_one_or_none()
     if not reset or not reset.token_hash:
         raise HTTPException(status_code=400, detail="Сначала подтверди код из письма")
-    if reset.expires_at <= utc_now():
+    if is_expired(reset.expires_at):
         reset.used = True
         await db.commit()
         raise HTTPException(status_code=400, detail="Срок восстановления истёк. Запроси новый код.")
