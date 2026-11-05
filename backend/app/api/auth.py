@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import hmac
 import secrets
 import smtplib
 from datetime import datetime, timedelta, timezone
@@ -32,6 +33,13 @@ def utc_now() -> datetime:
 
 def digest(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def reset_code_digest(code: str) -> str:
+    pepper = settings.reset_code_pepper
+    if not pepper:
+        raise HTTPException(status_code=503, detail="Восстановление пароля временно недоступно.")
+    return hmac.new(pepper.encode("utf-8"), code.encode("ascii"), hashlib.sha256).hexdigest()
 
 
 def normalize_email(value: str) -> str:
@@ -201,7 +209,7 @@ async def password_reset_request(data: EmailRequest, db: AsyncSession = Depends(
     )
     code = f"{secrets.randbelow(1_000_000):06d}"
     reset = PasswordReset(
-        user_id=user.id, code_hash=digest(code),
+        user_id=user.id, code_hash=reset_code_digest(code),
         expires_at=utc_now() + timedelta(minutes=RESET_MINUTES),
         attempts=0, used=False,
     )
@@ -222,6 +230,7 @@ async def password_reset_verify(data: ResetVerifyRequest, db: AsyncSession = Dep
     result = await db.execute(
         select(PasswordReset).join(User)
         .where(User.contact == email, PasswordReset.used.is_(False))
+        .with_for_update()
         .order_by(PasswordReset.id.desc()).limit(1)
     )
     reset = result.scalar_one_or_none()
@@ -235,7 +244,7 @@ async def password_reset_verify(data: ResetVerifyRequest, db: AsyncSession = Dep
         reset.used = True
         await db.commit()
         raise HTTPException(status_code=429, detail="Слишком много попыток. Запроси новый код.")
-    if not secrets.compare_digest(digest(data.code), reset.code_hash):
+    if not secrets.compare_digest(reset_code_digest(data.code), reset.code_hash):
         reset.attempts += 1
         if reset.attempts >= MAX_CODE_ATTEMPTS:
             reset.used = True
