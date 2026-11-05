@@ -203,3 +203,63 @@ async def test_password_reset_code_locks_after_five_wrong_attempts(client, monke
         json={"email": "attempts@example.com", "code": sent_codes[0]},
     )
     assert locked.status_code == 400
+
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_profile_requires_authentication(client):
+    response = await client.get("/api/v1/profile/me")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_profile_is_created_and_updates_are_persisted(client):
+    register = await client.post(
+        "/api/v1/auth/register",
+        json={"email": "profile@example.com", "password": "safe-password-123", "name": "Profile User"},
+        headers=await csrf_headers(client),
+    )
+    assert register.status_code == 201
+
+    initial = await client.get("/api/v1/profile/me")
+    assert initial.status_code == 200
+    assert initial.json()["display_name"] == "Profile User"
+    assert initial.json()["theme"] == "lavender"
+
+    updated = await client.patch(
+        "/api/v1/profile/me",
+        json={
+            "display_name": "New Name",
+            "bio": "I enjoy science and literature.",
+            "birthday": "2009-05-10",
+            "interests": ["Science", " Literature ", "Science", ""],
+            "theme": "sage",
+            "timezone": "Europe/Moscow",
+        },
+        headers=await csrf_headers(client),
+    )
+    assert updated.status_code == 200
+    assert updated.json()["display_name"] == "New Name"
+    assert updated.json()["interests"] == ["Science", "Literature"]
+    assert updated.json()["theme"] == "sage"
+
+    persisted = await client.get("/api/v1/profile/me")
+    assert persisted.status_code == 200
+    assert persisted.json()["bio"] == "I enjoy science and literature."
+    assert persisted.json()["birthday"] == "2009-05-10"
+
+
+@pytest.mark.asyncio
+async def test_profile_rejects_unknown_theme(client):
+    await client.post(
+        "/api/v1/auth/register",
+        json={"email": "theme@example.com", "password": "safe-password-123", "name": "Theme"},
+        headers=await csrf_headers(client),
+    )
+    response = await client.patch(
+        "/api/v1/profile/me",
+        json={"theme": "neon"},
+        headers=await csrf_headers(client),
+    )
+    assert response.status_code == 422
