@@ -46,3 +46,31 @@ footer { padding: 26px 0; color: #8A94A3; font-size: 12px; }
   .hero { padding: 54px 0; }
   .status-card { align-items: flex-start; }
 }
+
+
+.top-actions { display: flex; align-items: center; gap: 12px; }
+.account-link,.hero-account { color: #526783; font-size: 13px; font-weight: 600; }
+.hero-account { display: inline-block; margin-top: 24px; }
+.auth-layout { width: 100%; display: grid; grid-template-columns: 1fr minmax(300px, 440px); align-items: center; gap: clamp(36px, 8vw, 110px); padding: 56px 0; }
+.auth-intro h1 { max-width: 560px; }
+.back-home { display: inline-block; margin-top: 26px; color: #64748B; font-size: 14px; }
+.auth-card { background: white; border: 1px solid var(--line); border-radius: 22px; padding: clamp(24px, 4vw, 36px); box-shadow: 0 16px 48px #3037460b; }
+.auth-card h2 { font: 400 34px/1.15 "DM Serif Display", Georgia, serif; margin: 12px 0; }
+.auth-subtitle { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 26px; }
+.auth-card label { display: block; font-size: 13px; font-weight: 600; margin: 17px 0 8px; }
+.auth-card input { width: 100%; border: 1px solid var(--line); border-radius: 11px; padding: 13px 14px; color: #303746; background: #FBFCFE; font: inherit; outline: none; }
+.auth-card input:focus { border-color: #9FB5D0; box-shadow: 0 0 0 3px #C9D8EA55; }
+.auth-submit { width: 100%; margin-top: 24px; border-radius: 11px; padding: 14px 18px; color: white; background: #303746; font-weight: 600; }
+.auth-submit:disabled { opacity: .6; cursor: wait; }
+.auth-switch { text-align: center; color: var(--muted); font-size: 13px; margin: 18px 0 0; }
+.auth-switch button { padding: 0; background: none; color: #526783; font-weight: 600; }
+.form-message { font-size: 13px; line-height: 1.5; padding: 10px 12px; border-radius: 10px; margin: 16px 0 0; }
+.form-message.error { color: #9C4E56; background: #F9EEEE; }
+.form-message.success { color: #39765B; background: #EDF6F0; }
+@media (max-width: 760px) {
+  .auth-layout { grid-template-columns: 1fr; gap: 24px; padding: 30px 0 44px; }
+  .auth-intro { padding: 12px 0; }
+  .auth-intro h1 { font-size: 48px; }
+  .auth-card { width: 100%; }
+  .top-actions { margin-left: auto; }
+}
