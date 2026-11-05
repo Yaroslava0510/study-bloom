@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #303746;
+  background: #F5F7FA;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --surface: #fff;
+  --muted: #778293;
+  --blue: #C9D8EA;
+  --lavender: #DCD8EC;
+  --line: #E4EAF2;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: 0; }
+.shell { max-width: 1240px; margin: 0 auto; padding: 0 28px; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); }
+.brand { font-size: 22px; font-weight: 700; letter-spacing: -.7px; }
+.brand span { color: #849BB9; margin-left: 5px; }
+nav { display: flex; gap: 28px; color: #667184; font-size: 14px; }
+nav a:hover { color: #303746; }
+.language { border: 1px solid var(--line); background: white; border-radius: 10px; padding: 9px 13px; }
+main { flex: 1; display: flex; align-items: center; }
+.hero { width: min(760px, 100%); padding: 76px 0; }
+.eyebrow { color: #8493A8; font-size: 11px; font-weight: 700; letter-spacing: 1.8px; }
+h1 { font: 400 clamp(42px, 7vw, 72px)/1.06 "DM Serif Display", Georgia, serif; letter-spacing: -1.5px; margin: 20px 0; }
+.lead { color: var(--muted); font-size: 18px; line-height: 1.7; max-width: 580px; }
+.status-card,.page-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; margin-top: 38px; box-shadow: 0 12px 36px #30374608; }
+.status-card { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; }
+.status-card p,.page-card p { color: var(--muted); line-height: 1.6; margin-bottom: 0; }
+.status-card button { background: #303746; color: white; border-radius: 11px; padding: 12px 16px; }
+.status-card button:disabled { opacity: .6; }
+.online,.offline { font-size: 12px; font-weight: 600; }
+.online { color: #39765B; } .offline { color: #A15A5A; }
+.page-card { width: 100%; padding: 42px; }
+.page-card h1 { font-size: 48px; }
+footer { padding: 26px 0; color: #8A94A3; font-size: 12px; }
+@media (max-width: 760px) {
+  .shell { padding: 0 18px; }
+  .topbar { padding: 16px 0; flex-wrap: wrap; }
+  nav { order: 3; width: 100%; overflow-x: auto; gap: 20px; padding: 5px 0; }
+  nav a { white-space: nowrap; }
+  .hero { padding: 54px 0; }
+  .status-card { align-items: flex-start; }
+}
