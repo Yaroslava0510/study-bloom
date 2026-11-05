@@ -54,14 +54,15 @@ All routes use the `/api/v1/auth` prefix:
 - `POST /password-reset/verify`: verifies the code and returns a short-lived reset token
 - `POST /password-reset/complete`: changes the password and revokes existing sessions
 
-Passwords are hashed with Argon2. Session tokens are stored only as hashes in PostgreSQL and are delivered in HttpOnly cookies. Reset codes expire after 10 minutes and allow at most five attempts.
+Passwords are hashed with Argon2. Session tokens are stored only as hashes in PostgreSQL and are delivered in HttpOnly cookies. Reset codes expire after 10 minutes and allow at most five attempts. Password-reset requests are rate-limited per email and client IP using atomic, database-backed 15-minute buckets (3 requests per email / 10 per IP); code verification has separate limits (10 per email / 30 per IP). Old rate-limit buckets are pruned during requests.
 
 ## Database migrations
 - `0001_initial_auth`: users and password reset records
 - `0002_user_sessions`: server-side login sessions
+- `0003_rate_limit_buckets`: persistent rate-limit counters for password-reset endpoints
 
 ## Important verification status
-The routes and schema have been added to this migration branch. The frontend registration, login and password-reset screens are wired to the API helpers. Automated GitHub Actions checks have been added, but no successful run has yet been confirmed. No live PostgreSQL database has been connected and no migration, backend startup, email delivery, or end-to-end authentication test has yet been run. Add request rate limiting and automated tests before any public deployment.
+The routes and schema have been added to this migration branch. The frontend registration, login and password-reset screens are wired to the API helpers. GitHub Actions now runs the backend test suite with SQLite and applies Alembic migrations to a temporary PostgreSQL 16 service; the frontend also runs a production build. Check the Actions page for the latest run status. This CI PostgreSQL service is temporary and is not a production database. SMTP delivery, browser-level end-to-end flows, and the production hosting/cookie configuration still require separate verification.
 
 ## Migration safety
 The legacy root `index.html` and `backend/main.py` on `main` are intentionally unchanged. Do not switch production hosting to this workspace until authentication, persistence, tests, rate limiting, and deployment configuration have been verified.
