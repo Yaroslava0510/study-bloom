@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import AuthPage from "./AuthPage";
+import ProfilePage from "./ProfilePage";
 import { apiBaseUrl } from "../shared/api/client";
 
 const sections = [
@@ -60,7 +61,7 @@ export default function App() {
           <Route path="/articles" element={<Placeholder title={text("Articles", "Статьи")} description={text("Editorial and community stories will live here.", "Здесь будут редакционные и пользовательские статьи.")} />} />
           <Route path="/study" element={<Placeholder title={text("Study", "Учёба")} description={text("Goals, flexible planning, resources and your AI mentor.", "Цели, гибкое расписание, материалы и ИИ-наставник.")} />} />
           <Route path="/chats" element={<Placeholder title={text("Chats", "Чаты")} description={text("Conversations and communities, with privacy controls.", "Личные сообщения и сообщества с настройками приватности.")} />} />
-          <Route path="/profile" element={<Placeholder title={text("Profile", "Профиль")} description={text("Your profile, interests and saved collections.", "Твой профиль, интересы и сохранённые подборки.")} />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
