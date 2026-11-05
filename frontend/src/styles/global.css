@@ -88,3 +88,18 @@ footer { padding: 26px 0; color: #8A94A3; font-size: 12px; }
 .profile-save { width: 100%; margin-top: 24px; border-radius: 11px; padding: 14px 18px; color: white; background: #303746; font-weight: 600; }
 .profile-save:disabled { opacity: .6; }
 @media (max-width: 760px) { .profile-layout { grid-template-columns: 1fr; gap: 16px; padding: 28px 0; } }
+
+
+/* Pastel themes selected in the user's saved profile. */
+:root[data-theme="cloud"] { --surface: #FFFFFF; --line: #E4EAF2; --blue: #DCE5EF; background: #F5F7FA; }
+:root[data-theme="blue"] { --surface: #FFFFFF; --line: #DCE6F0; --blue: #C9D8EA; background: #EFF4F9; }
+:root[data-theme="lavender"] { --surface: #FFFFFF; --line: #E6E1EF; --blue: #DCD8EC; background: #F5F2F9; }
+:root[data-theme="sage"] { --surface: #FFFFFF; --line: #DFE8E3; --blue: #C8D4D0; background: #F1F5F2; }
+:root[data-theme="rose"] { --surface: #FFFFFF; --line: #F0E1E4; --blue: #EBD5DC; background: #FAF3F4; }
+:root[data-theme] body { background: transparent; }
+:root[data-theme] .profile-avatar { background: linear-gradient(135deg, var(--blue), var(--line)); }
+:root[data-theme] .auth-card, :root[data-theme] .profile-card,
+:root[data-theme] .page-card, :root[data-theme] .status-card { background: var(--surface); border-color: var(--line); }
+:root[data-theme] .profile-card input:focus,
+:root[data-theme] .profile-card textarea:focus,
+:root[data-theme] .profile-card select:focus { outline-color: var(--blue); border-color: #9FB5D0; }
