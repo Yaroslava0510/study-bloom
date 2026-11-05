@@ -29,6 +29,7 @@ Configure the backend environment before running migrations:
 export DATABASE_URL='postgresql+asyncpg://USER:PASSWORD@HOST:5432/DATABASE'
 export COOKIE_SECURE=false
 export COOKIE_SAMESITE=lax
+export RESET_CODE_PEPPER='GENERATE_A_LONG_RANDOM_SECRET_AND_KEEP_IT_PRIVATE'
 ```
 
 Apply the database schema and run the API:
@@ -39,7 +40,7 @@ cd ..
 uvicorn app.main:app --reload --app-dir backend
 ```
 
-Set `VITE_API_BASE_URL` for the frontend (default: `http://localhost:8000`). Set `CORS_ORIGINS` and `DATABASE_URL` on the backend. For password-reset email, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` and optionally `SMTP_FROM`. Never commit secrets or real database credentials.
+Set `VITE_API_BASE_URL` for the frontend (default: `http://localhost:8000`). Set `CORS_ORIGINS` and `DATABASE_URL` on the backend. For password-reset email, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` and optionally `SMTP_FROM`. `RESET_CODE_PEPPER` is required for password-reset codes; use a long random secret and keep it private. For `CORS_ORIGINS`, provide a JSON array of exact trusted origins, for example `[\"https://your-site.example\"]`. Never commit secrets or real database credentials.
 
 ## Authentication API
 
@@ -60,7 +61,7 @@ Passwords are hashed with Argon2. Session tokens are stored only as hashes in Po
 - `0002_user_sessions`: server-side login sessions
 
 ## Important verification status
-The routes and schema have been added to this migration branch, but no live PostgreSQL database has been connected and no migration, backend startup, email delivery, or end-to-end authentication test has yet been run. Add request rate limiting and automated tests before any public deployment. The current frontend still needs registration, login and password-reset screens wired to these API helpers.
+The routes and schema have been added to this migration branch. The frontend registration, login and password-reset screens are wired to the API helpers. Automated GitHub Actions checks have been added, but no successful run has yet been confirmed. No live PostgreSQL database has been connected and no migration, backend startup, email delivery, or end-to-end authentication test has yet been run. Add request rate limiting and automated tests before any public deployment.
 
 ## Migration safety
 The legacy root `index.html` and `backend/main.py` on `main` are intentionally unchanged. Do not switch production hosting to this workspace until authentication, persistence, tests, rate limiting, and deployment configuration have been verified.
