@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { apiGet, apiPatch } from "../shared/api/client";
 
 type Profile = {
@@ -35,6 +36,10 @@ export default function ProfilePage() {
       .catch(() => setMessage("Не удалось загрузить профиль. Войди в аккаунт и попробуй снова."))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (profile?.theme) document.documentElement.dataset.theme = profile.theme;
+  }, [profile?.theme]);
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
