@@ -30,3 +30,18 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
+
+export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
+  const csrfToken = await getCsrfToken();
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null) as { detail?: string } | null;
+    throw new Error(payload?.detail || `API request failed: ${response.status}`);
+  }
+  return response.json() as Promise<T>;
+}
