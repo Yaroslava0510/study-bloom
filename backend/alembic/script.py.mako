@@ -1,9 +1,10 @@
-""""""
+"""${message}"""
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-{imports if imports else ''}
+${imports if imports else ''}
 
 
 revision: str = ${repr(up_revision)}
