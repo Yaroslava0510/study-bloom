@@ -8,12 +8,14 @@ from email.message import EmailMessage
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from passlib.context import CryptContext
-from sqlalchemy import delete, select, update
+from sqlalchemy import case, delete, select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db import get_db
-from app.models import PasswordReset, User, UserSession
+from app.models import PasswordReset, RateLimitBucket, User, UserSession
 from app.schemas.auth import (
     EmailRequest, LoginRequest, RegisterRequest, ResetCompleteRequest,
     ResetVerifyRequest, UserResponse,
@@ -51,6 +53,66 @@ def reset_code_digest(code: str) -> str:
 
 def normalize_email(value: str) -> str:
     return value.strip().lower()
+
+
+async def enforce_auth_rate_limits(
+    db: AsyncSession,
+    request: Request,
+    action: str,
+    email: str,
+    email_limit: int,
+    ip_limit: int,
+) -> None:
+    """Atomically count requests in shared database buckets (not per-process memory)."""
+    pepper = settings.reset_code_pepper
+    if not pepper:
+        raise HTTPException(status_code=503, detail="Защита восстановления временно недоступна.")
+
+    dialect = db.get_bind().dialect.name
+    insert = pg_insert if dialect == "postgresql" else sqlite_insert if dialect == "sqlite" else None
+    if insert is None:
+        raise RuntimeError(f"Unsupported database dialect for auth rate limits: {dialect}")
+
+    now = utc_now()
+    window = timedelta(minutes=15)
+    cutoff = now - window
+    client_ip = request.client.host if request.client else "unknown"
+    checks = (
+        (f"{action}:email:{email}", email_limit),
+        (f"{action}:ip:{client_ip}", ip_limit),
+    )
+
+    # Keep this small table bounded; old buckets cannot affect the active 15-minute window.
+    await db.execute(
+        delete(RateLimitBucket).where(
+            RateLimitBucket.window_started_at < now - timedelta(days=1)
+        )
+    )
+
+    for identity, limit in checks:
+        key_hash = hmac.new(
+            pepper.encode("utf-8"), identity.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+        table = RateLimitBucket.__table__
+        reset_window = table.c.window_started_at <= cutoff
+        statement = insert(table).values(
+            key_hash=key_hash, count=1, window_started_at=now
+        ).on_conflict_do_update(
+            index_elements=[table.c.key_hash],
+            set_={
+                "count": case((reset_window, 1), else_=table.c.count + 1),
+                "window_started_at": case((reset_window, now), else_=table.c.window_started_at),
+            },
+        ).returning(table.c.count)
+        count = (await db.execute(statement)).scalar_one()
+        if count > limit:
+            await db.commit()
+            raise HTTPException(
+                status_code=429,
+                detail="Слишком много запросов. Подожди 15 минут и попробуй снова.",
+                headers={"Retry-After": "900"},
+            )
+    await db.commit()
 
 
 def set_auth_cookies(response: Response, session_token: str, csrf_token: str) -> None:
@@ -202,8 +264,11 @@ async def me(user: User = Depends(current_user)):
 
 
 @router.post("/password-reset/request")
-async def password_reset_request(data: EmailRequest, db: AsyncSession = Depends(get_db)):
+async def password_reset_request(
+    data: EmailRequest, request: Request, db: AsyncSession = Depends(get_db)
+):
     email = normalize_email(str(data.email))
+    await enforce_auth_rate_limits(db, request, "reset-request", email, email_limit=3, ip_limit=10)
     result = await db.execute(select(User).where(User.contact == email))
     user = result.scalar_one_or_none()
     # Keep the response identical for existing and unknown accounts.
@@ -232,8 +297,11 @@ async def password_reset_request(data: EmailRequest, db: AsyncSession = Depends(
 
 
 @router.post("/password-reset/verify")
-async def password_reset_verify(data: ResetVerifyRequest, db: AsyncSession = Depends(get_db)):
+async def password_reset_verify(
+    data: ResetVerifyRequest, request: Request, db: AsyncSession = Depends(get_db)
+):
     email = normalize_email(str(data.email))
+    await enforce_auth_rate_limits(db, request, "reset-verify", email, email_limit=10, ip_limit=30)
     result = await db.execute(
         select(PasswordReset).join(User)
         .where(User.contact == email, PasswordReset.used.is_(False))
