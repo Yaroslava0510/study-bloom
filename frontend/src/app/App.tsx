@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
+import AuthPage from "./AuthPage";
 import { apiBaseUrl } from "../shared/api/client";
 
 const sections = [
@@ -37,7 +38,10 @@ export default function App() {
         <nav aria-label="Main navigation">
           {sections.map((item) => <Link key={item.path} to={item.path}>{english ? item.label : item.ru}</Link>)}
         </nav>
-        <button className="language" onClick={() => setEnglish(!english)}>{english ? "RU" : "EN"}</button>
+        <div className="top-actions">
+          <Link className="account-link" to="/auth">{text("Account", "Аккаунт")}</Link>
+          <button className="language" onClick={() => setEnglish(!english)}>{english ? "RU" : "EN"}</button>
+        </div>
       </header>
       <main>
         <Routes>
@@ -50,7 +54,9 @@ export default function App() {
               <button onClick={checkApi} disabled={apiStatus === "checking"}>{apiStatus === "checking" ? text("Checking…", "Проверяем…") : text("Check API", "Проверить API")}</button>
               {apiStatus !== "idle" && <span className={apiStatus === "online" ? "online" : "offline"}>{apiStatus === "online" ? text("API online", "Сервер доступен") : apiStatus === "offline" ? text("API unavailable", "Сервер пока недоступен") : ""}</span>}
             </div>
+            <Link className="hero-account" to="/auth">{text("Create your account", "Создать аккаунт")} ↗</Link>
           </section>} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/articles" element={<Placeholder title={text("Articles", "Статьи")} description={text("Editorial and community stories will live here.", "Здесь будут редакционные и пользовательские статьи.")} />} />
           <Route path="/study" element={<Placeholder title={text("Study", "Учёба")} description={text("Goals, flexible planning, resources and your AI mentor.", "Цели, гибкое расписание, материалы и ИИ-наставник.")} />} />
           <Route path="/chats" element={<Placeholder title={text("Chats", "Чаты")} description={text("Conversations and communities, with privacy controls.", "Личные сообщения и сообщества с настройками приватности.")} />} />
