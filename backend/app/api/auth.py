@@ -31,6 +31,13 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def is_expired(value: datetime) -> bool:
+    # SQLite returns naive datetimes in tests; PostgreSQL stores timezone-aware values.
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value <= utc_now()
+
+
 def digest(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
@@ -236,7 +243,7 @@ async def password_reset_verify(data: ResetVerifyRequest, db: AsyncSession = Dep
     reset = result.scalar_one_or_none()
     if not reset:
         raise HTTPException(status_code=400, detail="Код недействителен или срок его действия истёк")
-    if reset.expires_at <= utc_now():
+    if is_expired(reset.expires_at):
         reset.used = True
         await db.commit()
         raise HTTPException(status_code=400, detail="Код недействителен или срок его действия истёк")
@@ -262,6 +269,7 @@ async def password_reset_complete(data: ResetCompleteRequest, db: AsyncSession =
     result = await db.execute(
         select(PasswordReset).join(User)
         .where(User.contact == email, PasswordReset.used.is_(False))
+        .with_for_update()
         .order_by(PasswordReset.id.desc()).limit(1)
     )
     reset = result.scalar_one_or_none()
