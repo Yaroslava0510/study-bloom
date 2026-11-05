@@ -156,3 +156,50 @@ async def test_password_reset_rejects_wrong_code_and_unknown_email(client, monke
         json={"email": "wrong-code@example.com", "code": "000000" if sent_codes[0] != "000000" else "000001"},
     )
     assert wrong.status_code == 400
+
+
+
+@pytest.mark.asyncio
+async def test_password_reset_request_is_rate_limited_per_email(client):
+    for _ in range(3):
+        response = await client.post(
+            "/api/v1/auth/password-reset/request",
+            json={"email": "unknown-rate-limit@example.com"},
+        )
+        assert response.status_code == 200
+
+    limited = await client.post(
+        "/api/v1/auth/password-reset/request",
+        json={"email": "unknown-rate-limit@example.com"},
+    )
+    assert limited.status_code == 429
+    assert limited.headers["Retry-After"] == "900"
+
+
+@pytest.mark.asyncio
+async def test_password_reset_code_locks_after_five_wrong_attempts(client, monkeypatch):
+    sent_codes = []
+    monkeypatch.setattr(auth, "send_reset_email", lambda email, code: sent_codes.append(code))
+    await client.post(
+        "/api/v1/auth/register",
+        json={"email": "attempts@example.com", "password": "safe-password-123", "name": "Attempts"},
+        headers=await csrf_headers(client),
+    )
+    await client.post(
+        "/api/v1/auth/password-reset/request",
+        json={"email": "attempts@example.com"},
+    )
+
+    wrong_code = "000000" if sent_codes[0] != "000000" else "000001"
+    for _ in range(5):
+        response = await client.post(
+            "/api/v1/auth/password-reset/verify",
+            json={"email": "attempts@example.com", "code": wrong_code},
+        )
+        assert response.status_code == 400
+
+    locked = await client.post(
+        "/api/v1/auth/password-reset/verify",
+        json={"email": "attempts@example.com", "code": sent_codes[0]},
+    )
+    assert locked.status_code == 400
